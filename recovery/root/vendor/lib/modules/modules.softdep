@@ -1,0 +1,4 @@
+# Soft dependencies extracted from modules themselves.
+softdep hx83112f pre: msm_drm
+softdep ilitek pre: msm_drm
+softdep icnl9922c pre: msm_drm
