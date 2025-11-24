@@ -25,6 +25,10 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+on boot 
+    start load-touch-modules
+    start dmesg-logger
+
 on fs && property:sys.usb.configfs=1
     mount configfs none /config
     mkdir /config/usb_gadget/g1 0770 shell shell
@@ -126,3 +130,15 @@ on property:sys.usb.config=fastboot && property:sys.usb.ffs.ready=1 && property:
     symlink /config/usb_gadget/g1/functions/ffs.fastboot /config/usb_gadget/g1/configs/b.1/f1
     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
     setprop sys.usb.state ${sys.usb.config}
+
+service load-touch-modules /system/bin/modprobe --all=/vendor/lib/modules/touch/modules.load --dirname=/vendor/lib/modules/touch
+    class core
+    oneshot
+    seclabel u:r:recovery:s0
+    disabled
+
+service dmesg-logger /sbin/sh -c "/system/bin/timeout 60 /system/bin/dmesg -w > /tmp/dmesg_a05s.txt"
+    class core
+    oneshot
+    seclabel u:r:recovery:s0
+    disabled
