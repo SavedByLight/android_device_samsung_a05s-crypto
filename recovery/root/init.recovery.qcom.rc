@@ -37,9 +37,10 @@ on property:ro.boot.usbcontroller=*
     wait /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode
     write /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode peripheral
     wait /sys/class/udc/${ro.boot.usbcontroller} 1
-
+    
 on boot 
     start health-hal-2-1
+    start vendor.keymint-default    
     
 on fs
     wait /dev/block/platform/soc/${ro.boot.bootdevice}
@@ -50,3 +51,18 @@ on fs
     mount vfat /dev/block/bootdevice/by-name/apnhlos /vendor/firmware_mnt ro
 
     export ANDROID_ROOT /system_root
+
+on post-fs
+    mkdir /mnt/vendor/efs/DAK 0700 root root
+    restorecon -R /mnt/vendor/efs/DAK
+    chown root root /mnt/vendor/efs/DAK/gakkeybox
+    chmod 0644 /mnt/vendor/efs/DAK/gakkeybox
+    
+on post-fs-data
+    mkdir /data/vendor/keymaster 0775 root root
+
+service vendor.keymint-default /system/bin/android.hardware.security.keymint-service
+    setenv LD_LIBRARY_PATH /vendor/lib64:/vendor/lib:/system/lib64:/system/lib:/sbin
+    user root
+    group root drmrpc
+    seclabel u:r:recovery:s0
